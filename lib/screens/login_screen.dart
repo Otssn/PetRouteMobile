@@ -4,7 +4,11 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:pet_route_mobile/components/loader_component.dart';
+import 'package:pet_route_mobile/helpers/constans.dart';
+import 'package:pet_route_mobile/models/token.dart';
+import 'package:pet_route_mobile/screens/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -41,15 +45,16 @@ class _LoginScreenState extends State<LoginScreen> {
               children: <Widget>[
                 _showLogo(),
                 SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
                 _showEmail(),
                 _showPassword(),
                 _showRememberMe(),
                 SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
                 _showButton(),
+                _showGoogle(),
               ],
             ),
           ),
@@ -66,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _showLogo() {
     return Image(
       image: AssetImage('assets/logo.png'),
-      width: 300,
+      width: 250,
     );
   }
 
@@ -145,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.resolveWith<Color>(
                   (Set<MaterialState> states) {
-                return Color(0xFFB4161B);
+                return Color(0xFF9347);
               }),
             ),
             onPressed: () => _login()),
@@ -154,10 +159,27 @@ class _LoginScreenState extends State<LoginScreen> {
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.resolveWith<Color>(
                   (Set<MaterialState> states) {
-                return Color(0xFF242B2E);
+                return Color(0xFF9347);
               }),
             ),
             onPressed: () {})
+      ],
+    );
+  }
+
+  Widget _showGoogle() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: <Widget>[
+        ElevatedButton(
+            child: Text('Iniciar con google'),
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                  (Set<MaterialState> states) {
+                return Color(0xFF9347);
+              }),
+            ),
+            onPressed: () => _googleLogin()),
       ],
     );
   }
@@ -190,6 +212,9 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       return;
     }
+    setState(() {
+      _showLoader = false;
+    });
 
     Map<String, dynamic> request = {'userName': _email, 'password': _password};
     var url = Uri.parse('${Constans.apiUrl}/api/Account/CreateToken');
@@ -264,5 +289,65 @@ class _LoginScreenState extends State<LoginScreen> {
     SharedPreferences pref = await SharedPreferences.getInstance();
     await pref.setBool('IsRemembered', true);
     await pref.setString('userBody', body);
+  }
+
+  _googleLogin() async {
+    var googleSign = GoogleSignIn();
+    await googleSign.signOut();
+    var user = await googleSign.signIn();
+    print(user);
+
+    Map<String, dynamic> request = {
+      'email': user?.email,
+      'id': user?.id,
+      'logerType': 1,
+      'fullName': user?.displayName,
+      'photoURL': user?.photoUrl,
+    };
+    await _socialLogin(request);
+  }
+
+  Future _socialLogin(Map<String, dynamic> request) async {
+    var url = Uri.parse('${Constans.apiUrl}/api/Account/SocialLogin');
+    var response = await http.post(
+      url,
+      headers: {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+      },
+      body: jsonEncode(request),
+    );
+
+    if (response.statusCode >= 400) {
+      setState(() {
+        _passwordShowError = true;
+      });
+      await showAlertDialog(
+        context: context,
+        title: 'Error',
+        message: 'El usuario ya inicio previamente con otra red social',
+        actions: <AlertDialogAction>[
+          AlertDialogAction(key: null, label: 'Aceptar')
+        ],
+      );
+      print(response.statusCode);
+      return;
+    }
+    setState(() {
+      _showLoader = false;
+    });
+
+    var body = response.body;
+
+    if (_rememberMe) {
+      _storeUser(body);
+    }
+
+    var decodejson = jsonDecode(body);
+    var token = Token.fromJson(decodejson);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => HomeScreen(token: token)),
+    );
   }
 }

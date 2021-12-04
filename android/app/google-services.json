@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "778495655195",
+    "project_id": "petroute-d0e74",
+    "storage_bucket": "petroute-d0e74.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:778495655195:android:eb4a2c3f2adc5e86caa7be",
+        "android_client_info": {
+          "package_name": "com.example.pet_route_mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "778495655195-shg4pfs9lpkqfjufn7t4ij6ieem9d403.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.pet_route_mobile",
+            "certificate_hash": "4ec7ddc0e15be7c3d2d1dcb98fccc393df618f78"
+          }
+        },
+        {
+          "client_id": "778495655195-sn6s7frl5fisqd2eir84tfdq4dicp6mu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBv1KLfn6eDI4fBWA6ztO0eogjunLngQXU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "778495655195-sn6s7frl5fisqd2eir84tfdq4dicp6mu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
